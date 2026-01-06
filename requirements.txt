@@ -1,0 +1,7 @@
+requests
+crawl4ai
+beautifulsoup4
+python-dotenv
+rich
+pytest
+pydantic

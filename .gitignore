@@ -1,0 +1,8 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+test_citation_response.json
+test_result_raw.json
+crawled_docs.json
