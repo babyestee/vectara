@@ -97,7 +97,7 @@ class VectaraClient:
                         "metadata_filter": metadata_filter
                     }
                 ],
-                "limit": 5  # Increased from 1 for better results
+                "limit": 3  # Balanced for context limits
             }
         }
         
@@ -106,7 +106,7 @@ class VectaraClient:
             if generation_config is None:
                 generation_config = {
                     "generation_preset_name": "mockingbird-2.0",
-                    "max_used_search_results": 3,
+                    "max_used_search_results": 2,
                     "max_response_characters": 2000,
                     "enable_factual_consistency_score": True,
                     "citations": {
@@ -165,11 +165,11 @@ class VectaraClient:
                                     "metadata_filter": "" 
                                 }
                             ],
-                            "limit": 3
+                            "limit": 2
                         },
                         "generation": {
                             "generation_preset_name": "mockingbird-2.0",
-                            "max_used_search_results": 3,
+                            "max_used_search_results": 2,
                             "max_response_characters": 2000,
                             "enable_factual_consistency_score": True,
                             "prompt_template": """[{"role": "system", "content": "You are a Vectara expert. ALWAYS end your response with 'Reference: abc'"}, {"role": "user", "content": "${vectaraQuery}\n\n#foreach ($qResult in $vectaraQueryResults)\n${qResult.getText()}\n#end\n\nAnswer and end with Reference: abc"}]""",
