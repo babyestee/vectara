@@ -1,4 +1,5 @@
 import json
+import re
 from src.vectara_client import VectaraClient
 from src.config import config
 
@@ -47,7 +48,6 @@ class QueryPlanner:
             
             summary = response.get("summary", "")
             # Robust JSON extraction
-            import re
             match = re.search(r'\[.*\]', summary, re.DOTALL)
             if match:
                 json_str = match.group(0)
@@ -79,7 +79,7 @@ class QueryOrchestrator:
             res = self.client.query(
                 query_text=step['query'],
                 metadata_filter=step['filter'] if step['filter'] else None,
-                generation_config={"enabled": False}  # Don't generate summary for steps
+                skip_generation=True  # Search only, no generation for intermediate steps
             )
             # Collect results for final synthesis
             if "search_results" in res:

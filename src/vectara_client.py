@@ -1,3 +1,6 @@
+import os
+import re
+import json
 import requests
 import time
 from src.config import config
@@ -33,7 +36,6 @@ class VectaraClient:
         }
         data = {}
         if metadata:
-            import json
             data['metadata'] = json.dumps(metadata)
             
         headers = self.headers.copy()
@@ -45,7 +47,6 @@ class VectaraClient:
 
     def index_document(self, corpus_key: str, document_id: str, content: str, metadata: dict = None):
         """Index a document with content and metadata."""
-        import re
         safe_id = re.sub(r'[^a-zA-Z0-9\-_]', '_', document_id)
         
         # Split content into parts of max 3500 chars
@@ -74,24 +75,18 @@ class VectaraClient:
                 print(f"Index error response: {e.response.text}")
             raise e
 
-    def query(self, query_text: str, corpus_key: str = None, metadata_filter: str = None, generation_config: dict = None):
-        """Query one or more corpora with advanced generation settings."""
+    def query(self, query_text: str, corpus_key: str = None, metadata_filter: str = None, generation_config: dict = None, skip_generation: bool = False):
+        """Query one or more corpora with advanced generation settings.
+        
+        Args:
+            query_text: The query string
+            corpus_key: The corpus to search (defaults to config.CORPUS_KEY)
+            metadata_filter: Optional SQL-like filter for metadata
+            generation_config: Custom generation settings (uses defaults if None)
+            skip_generation: If True, skips generation entirely (search only)
+        """
         corpus_key = corpus_key or config.CORPUS_KEY
         url = f"{self.base_url}query"
-        
-        # Default advanced generation config if not provided
-        if generation_config is None:
-            generation_config = {
-                "generation_preset_name": "mockingbird-2.0",
-                "max_used_search_results": 1,
-                "max_response_characters": 2000,
-                "enable_factual_consistency_score": True,
-                "citations": {
-                    "style": "markdown",
-                    "url_pattern": "{doc.url}",
-                    "text_pattern": "[{doc.title}]({doc.url})"
-                }
-            }
         
         payload = {
             "query": query_text,
@@ -102,10 +97,25 @@ class VectaraClient:
                         "metadata_filter": metadata_filter
                     }
                 ],
-                "limit": 1
-            },
-            "generation": generation_config
+                "limit": 5  # Increased from 1 for better results
+            }
         }
+        
+        # Only add generation config if not skipping
+        if not skip_generation:
+            if generation_config is None:
+                generation_config = {
+                    "generation_preset_name": "mockingbird-2.0",
+                    "max_used_search_results": 3,
+                    "max_response_characters": 2000,
+                    "enable_factual_consistency_score": True,
+                    "citations": {
+                        "style": "markdown",
+                        "url_pattern": "{doc.url}",
+                        "text_pattern": "[{doc.title}]({doc.url})"
+                    }
+                }
+            payload["generation"] = generation_config
             
         try:
             response = requests.post(url, headers=self.headers, json=payload)
@@ -224,5 +234,3 @@ class VectaraClient:
         response = requests.post(url, headers=self.headers, json=data)
         response.raise_for_status()
         return response.json()
-
-import os
